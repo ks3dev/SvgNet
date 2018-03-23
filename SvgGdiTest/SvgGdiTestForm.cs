@@ -430,7 +430,7 @@ namespace SvgGdiTest
                 fmt1.Alignment = StringAlignment.Near;
 
                 ig.DrawRectangle(new Pen(Color.Blue), rc1);
-                ig.DrawString("Text...1", fnt1, new SolidBrush(Color.DarkGreen), rc1, fmt1);
+                ig.DrawString("Imlongtext.\nImlongtext.\nImlongtext.\nImlongtext.", fnt1, new SolidBrush(Color.DarkGreen), 20, 20, fmt1);
 
                 Rectangle rc2 = new Rectangle(0, 0, 120, 20);
                 StringFormat fmt2 = new StringFormat();
