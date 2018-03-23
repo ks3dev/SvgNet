@@ -164,8 +164,7 @@ namespace SvgNet.SvgGdi
                     if (length > 0)
                     {
                         this.Data = reader.ReadBytes(length);
-                    }
-                    else
+                    } else
                     {
                         this.Data = EmptyData;
                     }
@@ -818,8 +817,7 @@ namespace SvgNet.SvgGdi
                     {
                         var stockObject = (EmfStockObject)(ihObject - StockObjectMinCode + (int)EmfStockObject.MinValue);
                         InternalSelectObject(stockObject);
-                    }
-                    else
+                    } else
                     {
                         ObjectHandle objectHandle;
                         if (_objects.TryGetValue(ihObject, out objectHandle))
@@ -827,8 +825,7 @@ namespace SvgNet.SvgGdi
                             if (objectHandle.IsStockObject)
                             {
                                 InternalSelectObject(objectHandle.GetStockObject());
-                            }
-                            else if (objectHandle.IsBrush)
+                            } else if (objectHandle.IsBrush)
                             {
                                 _brush = objectHandle.GetBrush();
                             }
@@ -895,8 +892,7 @@ namespace SvgNet.SvgGdi
                         MakeRoom(count);
                         for (var i = 0; i < count; i++)
                             _points.Add(Add(points[offset + i]));
-                    }
-                    else
+                    } else
                     {
                         if (!IsVisuallyIdentical(GetLastPoint(), points[offset]))
                             throw new ArgumentOutOfRangeException();
@@ -1785,8 +1781,7 @@ namespace SvgNet.SvgGdi
                 _cur.AddChild(lin);
 
                 DrawEndAnchors(pen, new PointF(x1, y1), new PointF(x2, y2));
-            }
-            else
+            } else
             {
                 DrawLines(pen, new PointF[] { new PointF(x1, y1), new PointF(x2, y2) });
             }
@@ -2013,7 +2008,7 @@ namespace SvgNet.SvgGdi
                             bezierCurvePointsIndex = 1;
                             pen.DashStyle = originalPenDashStyle; //Reset pen dash mode to original when starting subpath
                             continue;
-                        case PathPointType.Line:   
+                        case PathPointType.Line:
                             DrawLine(pen, start, subpath.PathPoints[i]); //Draw a line segment ftom start point
                             start = subpath.PathPoints[i]; //Move start point to line end
                             bezierCurvePoints[0] = subpath.PathPoints[i]; //A line point can also be the start of a Bezier curve
@@ -2044,14 +2039,14 @@ namespace SvgNet.SvgGdi
                 if (isClosed) //If the subpath is closed and it is a linear figure then draw the last connecting line segment
                 {
                     PathPointType originType = (PathPointType)subpath.PathTypes[0];
-                    PathPointType lastType = (PathPointType) subpath.PathTypes[subpath.PathPoints.Length - 1];
+                    PathPointType lastType = (PathPointType)subpath.PathTypes[subpath.PathPoints.Length - 1];
 
                     if (((lastType & PathPointType.PathTypeMask) == PathPointType.Line) && ((originType & PathPointType.PathTypeMask) == PathPointType.Line))
                     {
                         DrawLine(pen, last, origin);
                     }
                 }
-                
+
             }
             subpath.Dispose();
             subpaths.Dispose();
@@ -2357,14 +2352,13 @@ namespace SvgNet.SvgGdi
                     //subpath.CloseAllFigures();
                 }
                 PathPointType lastType = (PathPointType)subpath.PathTypes[subpath.PathPoints.Length - 1];
-                if (subpath.PathTypes.Any(pt => ((PathPointType) pt & PathPointType.PathTypeMask) == PathPointType.Line))
+                if (subpath.PathTypes.Any(pt => ((PathPointType)pt & PathPointType.PathTypeMask) == PathPointType.Line))
                 {
                     FillPolygon(brush, subpath.PathPoints, path.FillMode);
-                }
-                else
+                } else
                 {
                     FillBeziers(brush, subpath.PathPoints, path.FillMode);
-                }                                
+                }
 
             }
             subpath.Dispose();
@@ -2430,8 +2424,7 @@ namespace SvgNet.SvgGdi
             if (fillmode == FillMode.Alternate)
             {
                 pl.Style.Set("fill-rule", "evenodd");
-            }
-            else
+            } else
             {
                 pl.Style.Set("fill-rule", "nonzero");
             }
@@ -3343,8 +3336,7 @@ namespace SvgNet.SvgGdi
                 res.Add(points[0]);
 
                 return (PointF[])res.ToArray(typeof(PointF));
-            }
-            else
+            } else
             {
                 ArrayList subset = new ArrayList();
 
@@ -3382,8 +3374,7 @@ namespace SvgNet.SvgGdi
                     {
                         if (col <= w && line <= h)
                             DrawImagePixel(g, c, x + col, y + line, 1, 1);
-                    }
-                    else
+                    } else
                     {
                         DrawImagePixel(g, c, x + (col * scalex), y + (line * scaley), scalex, scaley);
                     }
@@ -3497,18 +3488,25 @@ namespace SvgNet.SvgGdi
 
         private void DrawText(String s, Font font, Brush brush, RectangleF rect, StringFormat fmt, bool ignoreRect)
         {
-            if (s != null && s.Contains("\n"))
-                throw new SvgGdiNotImpl("DrawText multiline text");
+            //if (s != null && s.Contains("\n"))
+            //    throw new SvgGdiNotImpl("DrawText multiline text");
 
-            SvgTextElement txt = new SvgTextElement(s, rect.X, rect.Y);
+            if (string.IsNullOrWhiteSpace(s)) return;
 
-            //GDI takes x and y as the upper left corner; svg takes them as the lower left.
-            //We must therefore move the text one line down, but SVG does not understand about lines,
-            //so we do as best we can, applying a downward translation before the current GDI translation.
 
-            txt.Transform = new SvgTransformList(_transforms.Result.Clone());
+            var strlist = s.Split('\n');
+            var lineHiehgt = MeasureString(strlist[0], font).Height;
 
-            txt.Style = HandleBrush(brush);
+            var txt = new SvgTextElement(s, rect.X, rect.Y)
+            {
+
+                //GDI takes x and y as the upper left corner; svg takes them as the lower left.
+                //We must therefore move the text one line down, but SVG does not understand about lines,
+                //so we do as best we can, applying a downward translation before the current GDI translation.
+
+                Transform = new SvgTransformList(_transforms.Result.Clone()),
+                Style = HandleBrush(brush)
+            };
             txt.Style += new SvgStyle(font);
 
             switch (fmt.Alignment)
@@ -3551,16 +3549,29 @@ namespace SvgNet.SvgGdi
                 txt.Style.Set("clip-path", new SvgUriReference(clipper));
             }
 
+            var idx = 0;
+            var action = new Action<string>((str) =>
+            {
+                var span = new SvgTspanElement(str)
+                {
+                    X = txt.X,
+                    DY = idx == 0 ? new SvgLength(txt.Style.Get("font-size").ToString()) : new SvgLength(lineHiehgt),
+                    // DY = new SvgLength(txt.Style.Get("font-size").ToString())
+                };
+                txt.Text = null;
+                txt.AddChild(span);
+                idx++;
+            });
+
+            Array.ForEach(strlist, str => action(str));
+
             switch (fmt.LineAlignment)
             {
                 case StringAlignment.Near:
                     {
                         // TODO: ??
                         // txt.Style.Set("baseline-shift", "-86%");//a guess.
-                        var span = new SvgTspanElement(s);
-                        span.DY = new SvgLength(txt.Style.Get("font-size").ToString());
-                        txt.Text = null;
-                        txt.AddChild(span);
+
                     }
                     break;
 
@@ -3569,12 +3580,21 @@ namespace SvgNet.SvgGdi
                         if (ignoreRect)
                             throw new SvgGdiNotImpl("DrawText automatic rect");
 
-                        txt.Y.Value = txt.Y.Value + (rect.Height / 2);
-                        var span = new SvgTspanElement(s);
-                        span.DY = new SvgLength(txt.Style.Get("font-size").ToString());
-                        span.DY.Value = span.DY.Value * ((1 - GetFontDescentPercentage(font)) - 0.5f);
-                        txt.Text = null;
-                        txt.AddChild(span);
+                        var g = GetDefaultGraphics();
+                        //Array.ForEach(strlist, str =>
+                        //{
+                        //    t += g.MeasureString(str, font).Height;
+                        //});
+
+                        txt.Y.Value = txt.Y.Value + (rect.Height - lineHiehgt * strlist.Length) / 2;
+                        //Array.ForEach(txt.Children, child => ((SvgTspanElement)child).)
+
+                        //txt.Y.Value = txt.Y.Value + (rect.Height / 2);
+                        //var span = new SvgTspanElement(s);
+                        //span.DY = new SvgLength(txt.Style.Get("font-size").ToString());
+                        //span.DY.Value = span.DY.Value * ((1 - GetFontDescentPercentage(font)) - 0.5f);
+                        //txt.Text = null;
+                        //txt.AddChild(span);
                     }
                     break;
 
@@ -3583,15 +3603,18 @@ namespace SvgNet.SvgGdi
                         if (ignoreRect)
                             throw new SvgGdiNotImpl("DrawText automatic rect");
 
-                        txt.Y.Value = txt.Y.Value + rect.Height;
-                        // This would solve the alignment as well, but it's not supported by Internet Explorer
-                        //
-                        // txt.Attributes["dominant-baseline"] = "text-after-edge";
-                        var span = new SvgTspanElement(s);
-                        span.DY = new SvgLength(txt.Style.Get("font-size").ToString());
-                        span.DY.Value = span.DY.Value * ((1 - GetFontDescentPercentage(font)) - 1);
-                        txt.Text = null;
-                        txt.AddChild(span);
+                        var g = GetDefaultGraphics();
+                        txt.Y.Value = rect.Y + rect.Height - lineHiehgt * strlist.Length;
+
+                        //txt.Y.Value = txt.Y.Value + rect.Height;
+                        //// This would solve the alignment as well, but it's not supported by Internet Explorer
+                        ////
+                        //// txt.Attributes["dominant-baseline"] = "text-after-edge";
+                        //var span = new SvgTspanElement(s);
+                        //span.DY = new SvgLength(txt.Style.Get("font-size").ToString());
+                        //span.DY.Value = span.DY.Value * ((1 - GetFontDescentPercentage(font)) - 1);
+                        //txt.Text = null;
+                        //txt.AddChild(span);
                     }
                     break;
 
@@ -3680,8 +3703,7 @@ namespace SvgNet.SvgGdi
                     {
                         grad.AddChild(new SvgStopElement(grbr.InterpolationColors.Positions[i], grbr.InterpolationColors.Colors[i]));
                     }
-                }
-                else
+                } else
                 {
                     grad.AddChild(new SvgStopElement("0%", grbr.LinearColors[0]));
                     grad.AddChild(new SvgStopElement("100%", grbr.LinearColors[1]));
